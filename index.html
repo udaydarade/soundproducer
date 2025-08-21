@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Hamming Code Audio Encoder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        body { font-family: 'Inter', sans-serif; }
+        button:active { transform: scale(0.98); }
+        button:disabled { cursor: not-allowed; opacity: 0.6; }
+        .section-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
         }
-        /* Simple animation for the button */
-        button:active {
-            transform: scale(0.98);
-        }
-        /* Custom styles for disabled button */
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -26,227 +24,213 @@
     <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 border border-gray-700">
         <div class="text-center mb-6">
             <h1 class="text-3xl font-bold text-cyan-400">Telecommunication System Encoder</h1>
-            <p class="text-gray-400 mt-2">Enter a binary message to encode it with Hamming parity and play the audio signal.</p>
+            <p class="text-gray-400 mt-2">A two-step process to encode a message and optionally introduce an error.</p>
         </div>
 
-        <!-- Input Section -->
-        <div class="mb-6">
+        <div class="mb-6 border-b border-gray-700 pb-6">
+             <h2 class="text-xl font-semibold text-cyan-300 mb-3">Step 1: Encode Message</h2>
             <label for="bitstring-input" class="block text-sm font-medium text-gray-300 mb-2">Binary Message (up to 20 bits)</label>
             <input type="text" id="bitstring-input" maxlength="20" class="w-full bg-gray-900 border border-gray-600 text-gray-200 rounded-lg p-3 text-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition" placeholder="e.g., 1100">
             <p id="error-message" class="text-red-400 text-sm mt-2 h-5"></p>
+            <div class="flex justify-center mt-4">
+                <button id="encode-button" class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-200 ease-in-out text-lg">
+                    Encode Message
+                </button>
+            </div>
         </div>
 
-        <!-- Control Button -->
-        <div class="flex justify-center mb-6">
-            <button id="play-button" class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-200 ease-in-out text-lg">
-                Encode and Play Audio
-            </button>
-        </div>
-
-        <!-- Output Section -->
-        <div id="output-section" class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 space-y-3 hidden">
+        <div id="output-section" class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 space-y-3 hidden mb-6">
             <h2 class="text-xl font-semibold text-cyan-300 border-b border-gray-600 pb-2 mb-3">Encoding Results</h2>
             <div>
                 <p class="text-sm text-gray-400">Original Message:</p>
                 <p id="original-message" class="font-mono text-lg text-white break-all"></p>
             </div>
             <div>
-                <p class="text-sm text-gray-400">Payload (Length + Message):</p>
-                <p id="payload" class="font-mono text-lg text-white break-all"></p>
-            </div>
-            <div>
                 <p class="text-sm text-gray-400">Calculated Parity Bits:</p>
                 <p id="parity-bits" class="font-mono text-lg text-white break-all"></p>
             </div>
-            <div>
-                <p class="text-sm text-gray-400">Parity-check (global) bit:</p>
-                <p id="parity-check-bit" class="font-mono text-lg text-yellow-300 break-all"></p>
-            </div>
             <div class="pt-2">
-                <p class="text-sm text-gray-400">Full Transmitted String:</p>
+                <p class="text-sm text-gray-400">Correctly Encoded String:</p>
                 <p id="transmitted-string" class="font-mono text-lg text-green-400 break-all"></p>
             </div>
         </div>
-        
-        <!-- Status Indicator -->
-        <div id="status" class="text-center mt-4 text-yellow-400 h-6"></div>
 
+        <div id="error-injection-section" class="hidden">
+            <h2 class="text-xl font-semibold text-orange-400 mb-3">Step 2: Introduce Error & Play</h2>
+            <div class="mb-4">
+                <label for="error-position-input" class="block text-sm font-medium text-gray-300 mb-2">
+                    Introduce Error at Bit Position (optional, 1-based)
+                </label>
+                <input type="number" id="error-position-input" min="1" class="w-full bg-gray-900 border border-gray-600 text-gray-200 rounded-lg p-3 text-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" placeholder="e.g., 3 to flip the 3rd bit">
+                <p id="error-pos-message" class="text-red-400 text-sm mt-2 h-5"></p>
+            </div>
+            <div id="error-output-section" class="pt-2 mb-4 hidden">
+                 <p class="text-sm text-gray-400">Final Transmitted String with Error:</p>
+                 <p id="transmitted-string-with-error" class="font-mono text-lg text-red-400 break-all"></p>
+            </div>
+            <div class="flex justify-center">
+                <button id="play-button" class="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-200 ease-in-out text-lg">
+                    Introduce Error & Play Audio
+                </button>
+            </div>
+            <div id="status" class="text-center mt-4 text-yellow-400 h-6"></div>
+        </div>
     </div>
 
-    <script>
-        // --- DOM Elements ---
-        const input = document.getElementById('bitstring-input');
-        const playButton = document.getElementById('play-button');
-        const errorMessage = document.getElementById('error-message');
-        const status = document.getElementById('status');
-        const outputSection = document.getElementById('output-section');
+<script>
+    // --- DOM Elements ---
+    const input = document.getElementById('bitstring-input');
+    const encodeButton = document.getElementById('encode-button');
+    const playButton = document.getElementById('play-button');
+    const errorPosInput = document.getElementById('error-position-input');
+    const errorMessage = document.getElementById('error-message');
+    const errorPosMessage = document.getElementById('error-pos-message');
+    const status = document.getElementById('status');
+    
+    const outputSection = document.getElementById('output-section');
+    const errorInjectionSection = document.getElementById('error-injection-section');
+    const errorOutputSection = document.getElementById('error-output-section');
 
-        // --- Audio Parameters ---
-        const FREQ_1 = 1500; // Hz for logical '1'
-        const FREQ_0 = 500;  // Hz for logical '0'
-        const BIT_MS = 300;  // Tone duration per bit (ms)
-        const GAP_MS = 300;   // Silence between bits (ms)
-        const START_FREQ = 5000; // Hz for start and end of message
-        const START_MS = 100; // duration for the start/end tone (ms)
+    // --- State Variable ---
+    let currentEncodedString = '';
 
-        // --- Hamming Code Parameters ---
-        const R = 5;
-        const N = 2**R - 1; // 31
-        const PARITY_POSITIONS = Array.from({ length: R }, (_, i) => 2**i); // [1, 2, 4, 8, 16]
+    // --- Audio Parameters ---
+    const FREQ_1 = 1500, FREQ_0 = 500, BIT_MS = 300, GAP_MS = 300;
+    const START_FREQ = 5000, START_MS = 300;
 
-        // This is a JavaScript port of the Python encoding logic.
-        function createTransmittedString(dataBits) {
-            const messageLen = dataBits.length;
-            // format(message_len, '05b') -> .toString(2).padStart(5, '0')
-            const lengthPrefix = messageLen.toString(2).padStart(5, '0');
-            const payload = lengthPrefix + dataBits;
+    // --- Hamming Code Parameters ---
+    const R = 5;
+    const N = 2**R - 1; // 31
+    const PARITY_POSITIONS = Array.from({ length: R }, (_, i) => 2**i);
 
-            // Build the conceptual 31-bit codeword for calculation
-            const codewordForCalc = Array(N + 1).fill('0');
-            
-            let payloadIdx = 0;
-            for (let pos = 1; pos <= N; pos++) {
-                if (PARITY_POSITIONS.includes(pos)) continue;
-                
-                if (payloadIdx < payload.length) {
-                    codewordForCalc[pos] = payload[payloadIdx];
-                    payloadIdx++;
-                }
-            }
-            
-            // Compute the 5 parity bits
-            let finalParityString = '';
-            for (const pPos of PARITY_POSITIONS) {
-                let xorSum = 0;
-                for (let bitPos = 1; bitPos <= N; bitPos++) {
-                    if ((bitPos & pPos) !== 0) {
-                        xorSum ^= parseInt(codewordForCalc[bitPos]);
-                    }
-                }
-                finalParityString += xorSum.toString();
-            }
-            // append one more bit which is xor of the 5 parity bits (global parity-check)
-            let finalParityXor = 0;
-            for (const bit of finalParityString) {
-                finalParityXor ^= parseInt(bit);
-            } 
-
-            return payload + finalParityString + finalParityXor.toString();
-        }
-
-        // Web Audio API implementation for playing tones
-        let audioContext;
-        
-        // Utility function for creating delays
-        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        // helper to play a single tone of given frequency and duration (ms)
-        async function playTone(freq, durationMs, includeGap = true) {
-            if (!audioContext) {
-                try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                } catch (e) {
-                    status.textContent = "Error: Web Audio API is not supported in this browser.";
-                    throw e;
-                }
-            }
-            // resume context in case it's suspended (required on some browsers)
-            if (audioContext.state === 'suspended') {
-                await audioContext.resume();
-            }
-
-            const oscillator = audioContext.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-            oscillator.connect(audioContext.destination);
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + durationMs / 1000);
-
-            // await the duration, plus optional small gap
-            if (includeGap) {
-                await sleep(durationMs + GAP_MS);
-            } else {
-                await sleep(durationMs);
+    function createTransmittedString(dataBits) {
+        const payload = dataBits;
+        const codewordForCalc = Array(N + 1).fill('0');
+        let payloadIdx = 0;
+        for (let pos = 1; pos <= N; pos++) {
+            if (PARITY_POSITIONS.includes(pos)) continue;
+            if (payloadIdx < payload.length) {
+                codewordForCalc[pos] = payload[payloadIdx];
+                payloadIdx++;
             }
         }
+        let finalParityString = '';
+        for (const pPos of PARITY_POSITIONS) {
+            let xorSum = 0;
+            for (let bitPos = 1; bitPos <= N; bitPos++) {
+                if ((bitPos & pPos) !== 0) {
+                    xorSum ^= parseInt(codewordForCalc[bitPos] || '0', 10);
+                }
+            }
+            finalParityString += xorSum.toString();
+        }
+        return payload + finalParityString;
+    }
 
-        async function playBits(bits) {
+    let audioContext;
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    async function playTone(freq, durationMs, includeGap = true) {
+        if (!audioContext) {
             try {
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
             } catch (e) {
-                status.textContent = "Error: Web Audio API is not supported in this browser.";
-                return;
+                status.textContent = "Error: Web Audio API not supported.";
+                throw e;
             }
-            
-            playButton.disabled = true;
-            status.textContent = 'Preparing audio...';
-
-            // Play start tone
-            status.textContent = 'Playing start tone';
-            await playTone(START_FREQ, START_MS);
-
-            // Play each bit
-            for (let i = 0; i < bits.length; i++) {
-                const bit = bits[i];
-                status.textContent = `Playing bit ${i + 1}/${bits.length}: ${bit}`;
-                const freq = bit === '1' ? FREQ_1 : FREQ_0;
-                await playTone(freq, BIT_MS);
-            }
-
-            // Play end tone
-            status.textContent = 'Playing end tone';
-            await playTone(START_FREQ, START_MS, false);
-
-            status.textContent = '✅ Playback complete!';
-            playButton.disabled = false;
         }
+        if (audioContext.state === 'suspended') await audioContext.resume();
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+        oscillator.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + durationMs / 1000);
+        await sleep(durationMs + (includeGap ? GAP_MS : 0));
+    }
 
-        // Event Listener for the button
-        playButton.addEventListener('click', () => {
-            const dataBits = input.value;
-            
-            // Input validation
-            if (!/^[01]+$/.test(dataBits) || dataBits.length === 0 || dataBits.length > 20) {
-                errorMessage.textContent = "Invalid input. Use only 0/1, length 1-20.";
-                outputSection.classList.add('hidden');
+    async function playBits(bits) {
+        playButton.disabled = true;
+        encodeButton.disabled = true;
+        status.textContent = 'Preparing audio...';
+        await playTone(START_FREQ, START_MS);
+        for (let i = 0; i < bits.length; i++) {
+            const bit = bits[i];
+            status.textContent = `Playing bit ${i + 1}/${bits.length}: ${bit}`;
+            const freq = bit === '1' ? FREQ_1 : FREQ_0;
+            await playTone(freq, BIT_MS);
+        }
+        await playTone(START_FREQ, START_MS, false);
+        status.textContent = '✅ Playback complete!';
+        playButton.disabled = false;
+        encodeButton.disabled = false;
+    }
+
+    // Listener for the first button: ENCODE
+    encodeButton.addEventListener('click', () => {
+        const dataBits = input.value;
+        if (!/^[01]+$/.test(dataBits) || dataBits.length === 0 || dataBits.length > 20) {
+            errorMessage.textContent = "Invalid input. Use only 0/1, length 1-20.";
+            outputSection.classList.add('hidden');
+            errorInjectionSection.classList.add('hidden');
+            return;
+        }
+        errorMessage.textContent = '';
+        errorPosMessage.textContent = '';
+        errorOutputSection.classList.add('hidden'); // Reset error output
+
+        // Perform encoding
+        currentEncodedString = createTransmittedString(dataBits);
+        const parity = currentEncodedString.slice(-R);
+
+        // Display results
+        document.getElementById('original-message').textContent = dataBits;
+        document.getElementById('parity-bits').textContent = parity;
+        document.getElementById('transmitted-string').textContent = currentEncodedString;
+        
+        // Show the results and the next step
+        outputSection.classList.remove('hidden');
+        errorInjectionSection.classList.remove('hidden');
+        outputSection.classList.add('section-fade-in');
+        errorInjectionSection.classList.add('section-fade-in');
+    });
+    
+    // Listener for the second button: INTRODUCE ERROR & PLAY
+    playButton.addEventListener('click', () => {
+        let finalStringToPlay = currentEncodedString;
+        const errorPosStr = errorPosInput.value;
+        errorPosMessage.textContent = '';
+        
+        if (errorPosStr) {
+            const errorPos = parseInt(errorPosStr, 10);
+            if (isNaN(errorPos) || errorPos < 1 || errorPos > currentEncodedString.length) {
+                errorPosMessage.textContent = `Error position must be between 1 and ${currentEncodedString.length}.`;
+                errorOutputSection.classList.add('hidden');
                 return;
             }
-            errorMessage.textContent = '';
+            const index = errorPos - 1;
+            const flippedBit = currentEncodedString[index] === '1' ? '0' : '1';
+            const stringWithError = currentEncodedString.substring(0, index) + flippedBit + currentEncodedString.substring(index + 1);
+            finalStringToPlay = stringWithError;
+            
+            document.getElementById('transmitted-string-with-error').textContent = stringWithError;
+            errorOutputSection.classList.remove('hidden');
+        } else {
+             errorOutputSection.classList.add('hidden');
+        }
+        
+        playBits(finalStringToPlay);
+    });
 
-            // Perform encoding
-            const txString = createTransmittedString(dataBits);
-            const payload = txString.slice(0, -R - 1); // payload is up to before parity bits (5) + parity-check (1)
-            // But for display you previously used slice(0, -R) - that included the parity-check; keep both for clarity below
-            const payloadAlt = txString.slice(0, -R); // payload + parity-check removed? (we keep both here)
-            const parity = txString.slice(-(R+1), -1); // last R bits except the final parity-check
-            const paritybit = txString.slice(-1); // final parity-check bit
-
-            // Display results
-            document.getElementById('original-message').textContent = dataBits;
-            // which payload to show: the intended human payload is length-prefix + dataBits => that's txString.slice(0, payload.length)
-            document.getElementById('payload').textContent = txString.slice(0, txString.length - (R + 1)); // length + message
-            document.getElementById('parity-bits').textContent = parity;
-            document.getElementById('parity-check-bit').textContent = paritybit;
-            document.getElementById('transmitted-string').textContent = txString;
-            outputSection.classList.remove('hidden');
-
-            // Play the audio (entire transmitted string includes parity-check as last bit)
-            playBits(txString);
-        });
-
-        // Real-time input validation
-        input.addEventListener('input', () => {
-            const value = input.value;
-            const sanitized = value.replace(/[^01]/g, '');
-            if (value !== sanitized) {
-                input.value = sanitized;
-            }
-             if (sanitized.length > 0) {
-                errorMessage.textContent = '';
-            }
-        });
-    </script>
+    // Real-time input sanitization
+    input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^01]/g, '');
+        if (input.value.length > 0) errorMessage.textContent = '';
+    });
+    errorPosInput.addEventListener('input', () => {
+        errorPosInput.value = errorPosInput.value.replace(/[^0-9]/g, '');
+        if (errorPosInput.value.length > 0) errorPosMessage.textContent = '';
+    });
+</script>
 </body>
 </html>
