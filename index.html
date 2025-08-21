@@ -95,7 +95,7 @@
     let currentEncodedString = '';
 
     // --- Audio Parameters ---
-    const FREQ_1 = 1500, FREQ_0 = 500, BIT_MS = 300, GAP_MS = 300;
+     const FREQ_1 = 2000, FREQ_0 = 500, BIT_MS = 500, GAP_MS = 500;
     const START_FREQ = 5000, START_MS = 300;
 
     // --- Hamming Code Parameters ---
@@ -146,14 +146,14 @@
         oscillator.connect(audioContext.destination);
         oscillator.start();
         oscillator.stop(audioContext.currentTime + durationMs / 1000);
-        await sleep(durationMs + (includeGap ? GAP_MS : 0));
+        await sleep(durationMs + (includeGap ? GAP_MS : GAP_MS*2));
     }
 
     async function playBits(bits) {
         playButton.disabled = true;
         encodeButton.disabled = true;
         status.textContent = 'Preparing audio...';
-        await playTone(START_FREQ, START_MS);
+        await playTone(START_FREQ, START_MS, false);
         for (let i = 0; i < bits.length; i++) {
             const bit = bits[i];
             status.textContent = `Playing bit ${i + 1}/${bits.length}: ${bit}`;
